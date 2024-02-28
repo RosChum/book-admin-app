@@ -1,1 +1,14 @@
-
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/app_db
+    username: postgres
+    password: postgres
+    hikari:
+      schema: app_schema
+  jpa:
+    generate-ddl: true
+    show-sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
