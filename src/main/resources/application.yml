@@ -12,3 +12,19 @@ spring:
     redis:
       host: localhost
       port: 6379
+app:
+  cache:
+    cacheNames:
+      - findBookByTitleAndAuthor
+      - findBookByCategory
+    caches:
+      findBookByTitleAndAuthor:
+        expiry: 100s
+      findBookByCategory:
+        expiry: 100s
+
+
+
+
+
+

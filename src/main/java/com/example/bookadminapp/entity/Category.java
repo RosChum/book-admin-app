@@ -3,7 +3,9 @@ package com.example.bookadminapp.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,7 +13,8 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "books_categories")
-public class Category {
+@ToString
+public class Category implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -20,7 +23,7 @@ public class Category {
     @Column(name = "name")
     private String name;
 
-    @ManyToMany(mappedBy = "categories", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "categories")
     private List<Book> books;
 
 

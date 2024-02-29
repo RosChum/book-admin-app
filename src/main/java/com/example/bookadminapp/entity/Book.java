@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,7 +12,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "books")
-public class Book {
+public class Book implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,7 +24,7 @@ public class Book {
     @Column(name = "author")
     private String author;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "books_catrgory", joinColumns = @JoinColumn(name = "book_id", referencedColumnName = "id")
             , inverseJoinColumns = @JoinColumn(name = "category_id", referencedColumnName = "id"))
     private List<Category> categories;

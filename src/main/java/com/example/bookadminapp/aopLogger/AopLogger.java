@@ -9,6 +9,8 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Arrays;
+
 @Aspect
 @Component
 @Slf4j
@@ -30,11 +32,15 @@ public class AopLogger {
 
     @Before("loggingAllControllers()")
     public void beforeAdviceFromAllControllers(JoinPoint joinPoint){
+        Arrays.stream(joinPoint.getArgs()).forEach(f->   log.info( "log controller" +f));
+
+
 
     }
 
     @Before("loggingAllService()")
     public void beforeAdviceFromAllService(JoinPoint joinPoint){
+        Arrays.stream(joinPoint.getArgs()).forEach(f->   log.info( "log Service" +f));
 
     }
 
