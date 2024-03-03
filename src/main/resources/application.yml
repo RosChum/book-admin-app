@@ -8,10 +8,16 @@ spring:
   jpa:
     generate-ddl: true
     show-sql: true
+#    hibernate:
+#      ddl-auto: create-drop
   data:
     redis:
       host: localhost
       port: 6379
+  properties:
+    hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+
 app:
   cache:
     cacheNames:
@@ -19,9 +25,9 @@ app:
       - findBookByCategory
     caches:
       findBookByTitleAndAuthor:
-        expiry: 100s
+        expiry: 1200s
       findBookByCategory:
-        expiry: 100s
+        expiry: 1200s
 
 
 

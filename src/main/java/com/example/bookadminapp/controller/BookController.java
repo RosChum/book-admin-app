@@ -36,12 +36,12 @@ public class BookController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<BookDto> create(@RequestBody @Valid BookDto dto) {
+    public ResponseEntity<ResponseDto> create(@RequestBody @Valid BookDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.create(dto));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<BookDto> update(@PathVariable UUID id, @RequestBody @Valid BookDto dto) {
+    public ResponseEntity<ResponseDto> update(@PathVariable UUID id, @RequestBody @Valid BookDto dto) {
         return ResponseEntity.ok().body(bookService.update(id, dto));
     }
 

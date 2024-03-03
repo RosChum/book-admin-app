@@ -24,7 +24,7 @@ public class Book implements Serializable{
     @Column(name = "author")
     private String author;
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany
     @JoinTable(name = "books_catrgory", joinColumns = @JoinColumn(name = "book_id", referencedColumnName = "id")
             , inverseJoinColumns = @JoinColumn(name = "category_id", referencedColumnName = "id"))
     private List<Category> categories;

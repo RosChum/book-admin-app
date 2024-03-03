@@ -13,8 +13,8 @@ import java.util.List;
 @RestControllerAdvice
 public class ControllerAdvice {
     @ExceptionHandler(ContentNotFoundException.class)
-    public ResponseEntity<? extends RuntimeException> contentNotFoundExceptionHandler(ContentNotFoundException exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception);
+    public ResponseEntity<String> contentNotFoundExceptionHandler(ContentNotFoundException exception){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

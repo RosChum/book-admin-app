@@ -9,6 +9,7 @@ import com.example.bookadminapp.mapper.BookMapper;
 import com.example.bookadminapp.repository.BookRepository;
 import com.example.bookadminapp.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.*;
 import org.springframework.stereotype.Service;
@@ -16,12 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @CacheConfig(cacheManager = "cacheManager")
+@Slf4j
 public class BookService {
 
     private final BookRepository bookRepository;
@@ -30,6 +33,9 @@ public class BookService {
     private final CacheManager cacheManager;
 
     public List<ResponseDto> findAll() {
+        List<Category> testCategory = categoryRepository.findAll();
+        testCategory.forEach(System.out::println);
+
         return bookRepository.findAll().stream().map(book -> {
             ResponseDto responseDto = bookMapper.convertToResponse(book);
             responseDto.setCategories(book.getCategories().stream().map(Category::getName).collect(Collectors.toList()));
@@ -51,7 +57,6 @@ public class BookService {
     @Cacheable(cacheNames = "findBookByCategory", key = "#category")
     public List<ResponseDto> findBookByCategory(String category) {
         if (category == null || category.isBlank()) return findAll();
-
         Category exestCategory = categoryRepository.findByName(category)
                 .orElseThrow(() -> new ContentNotFoundException(MessageFormat
                         .format("Категория {0} не найдена", category)));
@@ -66,40 +71,37 @@ public class BookService {
 
     }
 
-    @Caching(evict = {
-            @CacheEvict(cacheNames = "findBookByTitleAndAuthor", key = "#dto.title + #dto.author", beforeInvocation = true),
-            @CacheEvict(cacheNames = "findBookByCategory", key = "#dto.categories.get(0).name", beforeInvocation = true)
-    })
     @Transactional
-    public BookDto create(BookDto dto) {
+    public ResponseDto create(BookDto dto) {
         Book book = bookMapper.convertToEntity(dto);
-        book.setCategories(dto.getCategories());
-        BookDto bookDto = bookMapper.convertToDto(bookRepository.save(book));
-        bookDto.setCategories(book.getCategories());
-        return bookDto;
+        book.setCategories(createCategory(book.getCategories()));
+        ResponseDto responseDto = bookMapper.convertToResponse(bookRepository.save(book));
+        responseDto.setCategories(book.getCategories().stream().map(Category::getName).collect(Collectors.toList()));
+        clearCache(book.getTitle(), book.getAuthor(), book.getCategories());
+        return responseDto;
 
     }
 
 
     @Transactional
-    public BookDto update(UUID id, BookDto dto) {
+    public ResponseDto update(UUID id, BookDto dto) {
         Book exestBook = bookRepository.findById(id)
                 .orElseThrow(() -> new ContentNotFoundException(MessageFormat.format("Книга с id {0} не найдена", id)));
+        clearCache(exestBook.getTitle(), exestBook.getAuthor(), exestBook.getCategories());
         if (dto.getCategories() != null) {
-            exestBook.setCategories(dto.getCategories());
+            exestBook.setCategories(createCategory(dto.getCategories()));
         }
         exestBook.setAuthor(dto.getAuthor());
         exestBook.setTitle(dto.getTitle());
-        BookDto bookDto = bookMapper.convertToDto(bookRepository.save(exestBook));
-        bookDto.setCategories(exestBook.getCategories());
-        return bookDto;
+        exestBook.setCategories(createCategory(dto.getCategories()));
+        ResponseDto responseDto = bookMapper.convertToResponse(bookRepository.save(exestBook));
+        responseDto.setCategories(exestBook.getCategories().stream().map(Category::getName).collect(Collectors.toList()));
+        return responseDto;
     }
 
     public void delete(UUID id) {
         Book book = findById(id);
         clearCache(book.getTitle(), book.getAuthor(), book.getCategories());
-
-
         bookRepository.deleteById(id);
     }
 
@@ -107,9 +109,24 @@ public class BookService {
         return bookRepository.findById(id).orElseThrow();
     }
 
-    private void clearCache(String title, String author, List<Category> category) {
-        cacheManager.getCache("findBookByTitleAndAuthor").evict(title + author);
-        cacheManager.getCache("findBookByCategory").evict(category.get(0).getName());
+    private void clearCache(String title, String author, List<Category> categories) {
+        log.info(" clearCache  title" + title + " author " + author + "categories" + categories);
+        Objects.requireNonNull(cacheManager.getCache("findBookByTitleAndAuthor")).evict(title + author);
+        categories.forEach(category -> {
+            Objects.requireNonNull(cacheManager.getCache("findBookByCategory")).evict(category.getName());
+        });
+    }
+
+    private List<Category> createCategory(List<Category> categories){
+     return categories.stream().map(category -> {
+            Category exestCategory = categoryRepository.findCategoryByNameEquals(category.getName()).orElse(new Category());
+            if (exestCategory.getId() == null){
+                exestCategory.setName(category.getName());
+                exestCategory.setBooks(category.getBooks());
+                categoryRepository.save(exestCategory);
+            }
+            return exestCategory;
+        }).collect(Collectors.toList());
     }
 
 }
