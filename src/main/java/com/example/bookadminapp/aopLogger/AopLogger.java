@@ -24,30 +24,15 @@ public class AopLogger {
     public void loggingAllService() {
     }
 
-
-    @Pointcut("within(@org.springframework.web.bind.annotation.RestControllerAdvice *)")
-    public void loggingControllerAdvice() {
-    }
-
-
     @Before("loggingAllControllers()")
-    public void beforeAdviceFromAllControllers(JoinPoint joinPoint){
-        Arrays.stream(joinPoint.getArgs()).forEach(f->   log.info( "log controller" +f));
-
-
-
+    public void beforeAdviceFromAllControllers(JoinPoint joinPoint) {
+        Arrays.stream(joinPoint.getArgs()).forEach(methodArgs -> log.info("Log controller " + joinPoint.getSignature() + " methodArgs: " + methodArgs));
     }
 
     @Before("loggingAllService()")
-    public void beforeAdviceFromAllService(JoinPoint joinPoint){
-        Arrays.stream(joinPoint.getArgs()).forEach(f->   log.info( "log Service" +f));
-
+    public void beforeAdviceFromAllService(JoinPoint joinPoint) {
+        Arrays.stream(joinPoint.getArgs()).forEach(methodArgs -> log.info("Log Service " + joinPoint.getSignature() + " methodArgs: " + methodArgs));
     }
 
-
-    @AfterThrowing(value = "loggingControllerAdvice()", throwing = "exception")
-    public void afterAdviceFromLoggingControllerAdvice(JoinPoint joinPoint, Exception exception){
-
-    }
 
 }

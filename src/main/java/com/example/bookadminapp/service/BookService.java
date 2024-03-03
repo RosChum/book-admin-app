@@ -33,9 +33,6 @@ public class BookService {
     private final CacheManager cacheManager;
 
     public List<ResponseDto> findAll() {
-        List<Category> testCategory = categoryRepository.findAll();
-        testCategory.forEach(System.out::println);
-
         return bookRepository.findAll().stream().map(book -> {
             ResponseDto responseDto = bookMapper.convertToResponse(book);
             responseDto.setCategories(book.getCategories().stream().map(Category::getName).collect(Collectors.toList()));
@@ -96,6 +93,7 @@ public class BookService {
         exestBook.setCategories(createCategory(dto.getCategories()));
         ResponseDto responseDto = bookMapper.convertToResponse(bookRepository.save(exestBook));
         responseDto.setCategories(exestBook.getCategories().stream().map(Category::getName).collect(Collectors.toList()));
+
         return responseDto;
     }
 
@@ -110,7 +108,6 @@ public class BookService {
     }
 
     private void clearCache(String title, String author, List<Category> categories) {
-        log.info(" clearCache  title" + title + " author " + author + "categories" + categories);
         Objects.requireNonNull(cacheManager.getCache("findBookByTitleAndAuthor")).evict(title + author);
         categories.forEach(category -> {
             Objects.requireNonNull(cacheManager.getCache("findBookByCategory")).evict(category.getName());
